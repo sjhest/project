@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE struts PUBLIC
+	"-//Apache Software Foundation//DTD Struts Configuration 2.3//EN"
+	"http://struts.apache.org/dtds/struts-2.3.dtd">
+
+<struts>
+
+    <constant name="struts.enable.DynamicMethodInvocation" value="false" />
+    <constant name="struts.devMode" value="true" />
+    <constant name="struts.ui.theme" value="simple" />
+
+    <package name="projectPkg" namespace="/" extends="json-default">
+    
+    	<interceptors>
+			<interceptor-stack name="projectStack">
+				<interceptor-ref name="defaultStack">
+					<!-- 设置modelDriven拦截器的 属性为true，使栈顶的model对象刷新 -->
+					<param name="modelDriven.refreshModelBeforeResult">true</param>
+					<param name="fileUpload.maximumSize">60000</param>
+					<param name="fileUpload.allowedExtensions">.jsp,.jpeg,.png,.bmp,.gif</param>
+					<param name="fileUpload.allowedTypes">image/jpg,image/jpeg,image/pjpeg,image/gif,image/png, image/bmp</param>
+				</interceptor-ref>
+			</interceptor-stack>
+		</interceptors>
+		
+		<default-interceptor-ref name="projectStack"></default-interceptor-ref>
+
+        <default-action-ref name="index" />
+		
+        <global-results>
+            <result name="error">/WEB-INF/jsp/error.jsp</result>
+        </global-results>
+		<!--  
+        <global-exception-mappings>
+            <exception-mapping exception="java.lang.Exception" result="error"/>
+        </global-exception-mappings>
+		-->
+		
+		<action name="GiAction_*" class="giAction" method="{1}">
+			<result name="toGiPage">/jsps/giTree.jsp</result>
+			<result name="getTree" type="json">
+				<param name="root">elist</param>
+			</result>
+		</action>
+		
+    </package>
+
+
+    <!-- Add packages here -->
+
+</struts>

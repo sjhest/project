@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.0.xsd
+		http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-4.0.xsd
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-4.0.xsd">
+
+	<context:component-scan base-package="com.sjh.project.dao.impl,com.sjh.project.service.impl,com.sjh.project.struts.action"></context:component-scan>
+	
+	<context:property-placeholder location="classpath:db.properties"/>
+	
+	<bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource">
+		<property name="user" value="${jdbc.user}"></property>
+		<property name="password" value="${jdbc.password}"></property>
+		<property name="driverClass" value="${jdbc.driverClass}"></property>
+		<property name="jdbcUrl" value="${jdbc.url}"></property>
+		
+		<property name="initialPoolSize" value="${c3p0.pool.size.init}"></property>
+		<property name="maxPoolSize" value="${c3p0.pool.size.max}"></property>
+		<property name="minPoolSize" value="${c3p0.pool.size.min}"></property>
+		<property name="acquireIncrement" value="${c3p0.pool.size.incr}"></property>
+	</bean>
+ 
+	<bean id="sessionFactory" class="org.springframework.orm.hibernate4.LocalSessionFactoryBean">
+		<property name="dataSource" ref="dataSource"></property>
+		<property name="configLocation" value="classpath:hibernate.cfg.xml"></property>
+		<property name="packagesToScan" value="com.sjh.project.model"></property>
+	</bean>
+	
+	<bean id="transactionManager" class="org.springframework.orm.hibernate4.HibernateTransactionManager">
+		<property name="sessionFactory" ref="sessionFactory"></property>
+	</bean>
+
+	<tx:advice id="transactionAdvice" transaction-manager="transactionManager">
+		<tx:attributes>
+			<tx:method name="save*" propagation="REQUIRED" isolation="READ_COMMITTED"/>
+			<tx:method name="update*" propagation="REQUIRED" isolation="READ_COMMITTED"/>
+			<tx:method name="delete*" propagation="REQUIRED" isolation="READ_COMMITTED"/>
+			<tx:method name="batch*" propagation="REQUIRED" isolation="READ_COMMITTED"/>
+			
+			<tx:method name="get*" propagation="REQUIRED" isolation="READ_COMMITTED" read-only="true"/>
+			<tx:method name="load*" propagation="REQUIRED" isolation="READ_COMMITTED" read-only="true"/>
+			<tx:method name="find*" propagation="REQUIRED" isolation="READ_COMMITTED" read-only="true"/>
+			
+			<tx:method name="*" propagation="REQUIRED" isolation="READ_COMMITTED"/>
+		</tx:attributes>
+	</tx:advice>
+	
+	<aop:config>
+		<!-- 注意理解这个切入点表达式：任意返回类型，任意包下的任意以Service结尾的类的带有任意参数的任意方法 -->
+		<aop:advisor advice-ref="transactionAdvice" pointcut="execution(* *..*Service.*(..))"/>
+	</aop:config>
+</beans>
